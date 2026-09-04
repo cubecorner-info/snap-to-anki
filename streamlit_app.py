@@ -32,9 +32,9 @@ with input_tab2:
 
 # Candidate models ordered by preference
 CANDIDATE_MODELS = [
-    "gemini-2.5-flash",
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite"
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
+    "gemini-3.1-flash-lite"
 ]
 
 def generate_with_fallback_and_retry(client, file_bytes, mime_type, prompt):
