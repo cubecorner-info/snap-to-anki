@@ -17,6 +17,9 @@ if not api_key:
 
 deck_name = st.text_input("Deck Name", value="My Study Deck")
 
+# Add this slider:
+target_cards = st.slider("Target Number of Cards", min_value=5, max_value=50, value=25, step=5)
+
 input_tab1, input_tab2 = st.tabs(["📁 Upload File/PDF", "📷 Snap Photo"])
 uploaded_file = None
 
@@ -77,16 +80,28 @@ if st.button("Generate Flashcard Deck", type="primary"):
                 file_bytes = uploaded_file.getvalue()
                 mime_type = getattr(uploaded_file, "type", None) or "image/jpeg"
 
-                prompt = """
-                Analyze the physical or digital notes in this document.
-                Extract high-yield key concepts, formulas, definitions, and questions into atomic flashcards.
-                Output strictly a valid JSON array of objects with 'front' and 'back' fields.
-                Example format:
-                [
-                  {"front": "What is the primary function of the ribosome?", "back": "Protein synthesis."},
-                  {"front": "State Newton's Second Law of Motion", "back": "F = ma (Force equals mass times acceleration)"}
-                ]
-                """
+                prompt = f"""
+You are an exhaustive Anki flashcard creator following the Minimum Information Principle.
+Analyze the provided notes thoroughly and create at least {target_cards} distinct flashcards.
+
+CRITICAL EXTRACTION RULES:
+1. EXHAUSTIVE COVERAGE: Do not summarize. Extract every formula, definition, rule, date, step, and nuance.
+2. ATOMIC FACT PRINCIPLE: One single question and one specific answer per card. 
+   - Never list multiple items on the back.
+   - If a concept has 3 parts or steps, make 3 separate cards (e.g., Step 1 card, Step 2 card, Step 3 card).
+3. QUESTION TYPES TO GENERATE:
+   - "What is..." / "Define..." (Key terminology)
+   - "Why..." / "How does X cause Y?" (Mechanisms & relationships)
+   - "What is the formula for...?" (Math / Science)
+   - "What is the difference between X and Y?" (Contrast cards)
+4. OUTPUT FORMAT:
+   Return strictly a valid JSON array of objects with 'front' and 'back' fields.
+   Example:
+   [
+     {{"front": "[Topic] What is X?", "back": "Definition of X."}},
+     {{"front": "[Topic] Why does Y occur?", "back": "Direct cause of Y."}}
+   ]
+"""
 
                 raw_json, used_model = generate_with_fallback_and_retry(
                     client, file_bytes, mime_type, prompt
