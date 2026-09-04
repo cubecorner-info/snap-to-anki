@@ -58,7 +58,7 @@ if st.button("Generate Flashcard Deck", type="primary"):
 
                 # 2. Query Gemini model with strict JSON formatting
                 response = client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model="gemini-3.6-flash",
                     contents=[
                         types.Part.from_bytes(data=file_bytes, mime_type=mime_type),
                         prompt
