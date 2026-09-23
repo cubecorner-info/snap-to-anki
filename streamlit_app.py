@@ -184,10 +184,11 @@ with input_tab2:
         uploaded_file = camera_photo
         input_source = "camera"
 
+# Updated candidate models ordered by preference
 CANDIDATE_MODELS = [
-    "gemini-3.6-flash",
-    "gemini-3.0-flash",
-    "gemini-2.5-flash",
+    "gemini-3.8-flash",       # Latest frontier Flash model (best reasoning & coding)
+    "gemini-3.6-flash",       # Stable everyday workhorse
+    "gemini-3.5-flash-lite",  # Low-latency, budget-friendly fallback
 ]
 
 class Flashcard(BaseModel):
