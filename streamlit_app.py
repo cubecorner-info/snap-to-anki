@@ -1,4 +1,8 @@
+Here is the full, updated `app.py` script with the active `gemini-3.6-flash` model lineup and all UI/logic improvements applied:
+
+```python
 import io
+import os
 import time
 import random
 import hashlib
@@ -16,176 +20,146 @@ except ImportError:
     fitz = None
 
 # ------------------------------------------------------------------------------
-# 1. Page Configuration & Minimalist CSS UI
+# 1. Page Configuration & Claude Dark Mode CSS UI
 # ------------------------------------------------------------------------------
 st.set_page_config(page_title="Snap to Anki", page_icon="✦", layout="centered")
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
-
-    :root {
-        --bg: #0a0a0d;
-        --surface: #14121a;
-        --surface-hover: #1c1824;
-        --border: rgba(155, 110, 180, 0.18);
-        --border-hover: rgba(155, 110, 180, 0.35);
-        --violet: #4c2a72;
-        --violet-bright: #7c4dbd;
-        --wine: #5e1a30;
-        --wine-bright: #9b2c47;
-        --text: #ece7ee;
-        --text-muted: #8f8698;
-    }
-
-    html, body, [class*="css"] {
-        font-family: 'IBM Plex Sans', sans-serif;
-    }
-
+    @import url('https://fonts.googleapis.com/css2?family=Söhne:wght@400;500;600&family=Inter:wght@300;400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap');
+    
+    /* Overall Page Background & Text Base */
     .stApp {
-        background: var(--bg);
-        color: var(--text);
+        background-color: #0d0d0e !important;
+        color: #e3e3e8 !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
     }
 
-    section[data-testid="stSidebar"] {
-        background: var(--surface);
-        border-right: 1px solid var(--border);
-    }
-
-    .clean-header {
-        font-family: 'Fraunces', serif;
+    /* Claude-Style Serif Header */
+    .claude-header {
+        font-family: 'Newsreader', Georgia, serif;
         font-size: 2.6rem;
-        font-weight: 500;
+        font-weight: 400;
         text-align: center;
-        color: var(--text);
+        color: #f0ede6;
         letter-spacing: -0.5px;
-        margin-bottom: 0.4rem;
+        margin-top: 1rem;
+        margin-bottom: 0.3rem;
     }
 
-    .header-rule {
-        width: 72px;
-        height: 3px;
-        margin: 0 auto 1.4rem auto;
-        border-radius: 2px;
-        background: linear-gradient(90deg, var(--violet-bright), var(--wine-bright));
-    }
-
-    .clean-sub {
+    .claude-sub {
+        font-family: 'Inter', sans-serif;
         font-size: 0.95rem;
         text-align: center;
-        color: var(--text-muted);
+        color: #9a9ab0;
         font-weight: 400;
-        margin-bottom: 2.2rem;
+        margin-bottom: 2.5rem;
     }
 
-    h1, h2, h3 { font-family: 'Fraunces', serif; color: var(--text); }
-
-    label, .stMarkdown, p, span, div {
-        color: var(--text);
+    /* Input Labels and Form Controls */
+    label, div[data-testid="stMarkdownContainer"] p {
+        color: #c5c5d0 !important;
+        font-size: 0.92rem !important;
     }
 
-    div[data-testid="stVerticalBlock"] > div, .stTabs [data-baseweb="tab-list"] {
-        border-radius: 10px;
+    /* Input Fields (Text Inputs, Sliders) */
+    input[type="text"], input[type="password"] {
+        background-color: #16161a !important;
+        border: 1px solid #2a2a35 !important;
+        border-radius: 8px !important;
+        color: #f0ede6 !important;
+        padding: 0.5rem 0.8rem !important;
     }
 
+    input[type="text"]:focus, input[type="password"]:focus {
+        border-color: #5b21b6 !important; /* Muted Dark Violet */
+        box-shadow: 0 0 0 1px #5b21b6 !important;
+    }
+
+    /* File Uploader & Camera Area */
+    div[data-testid="stFileUploader"], div[data-testid="stCameraInput"] {
+        background-color: #121216 !important;
+        border: 1px dashed #2e2e3d !important;
+        border-radius: 12px !important;
+        padding: 1rem !important;
+    }
+
+    /* Custom Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        gap: 4px;
-        padding: 4px;
+        background-color: #121216 !important;
+        border-radius: 10px !important;
+        padding: 4px !important;
+        gap: 4px !important;
+        border: 1px solid #22222d !important;
     }
 
     .stTabs [data-baseweb="tab"] {
-        color: var(--text-muted);
-        font-weight: 500;
-        border-radius: 8px;
+        color: #8e8e9f !important;
+        border-radius: 6px !important;
+        border: none !important;
+        padding: 8px 16px !important;
     }
 
     .stTabs [aria-selected="true"] {
-        background: var(--violet) !important;
-        color: var(--text) !important;
+        background-color: #1e1b2e !important; /* Deep Violet Tint */
+        color: #e2d9f3 !important;
+        font-weight: 500 !important;
     }
 
-    .stButton>button {
-        background: var(--violet) !important;
-        color: var(--text) !important;
+    /* Main Action Button - Deep Wine Red Accent */
+    .stButton>button[kind="primary"] {
+        background: linear-gradient(180deg, #721c24 0%, #4a1217 100%) !important;
+        color: #f8d7da !important;
         font-weight: 500 !important;
-        font-family: 'IBM Plex Sans', sans-serif !important;
-        border: 1px solid var(--border-hover) !important;
-        border-radius: 10px !important;
-        padding: 0.6rem 2rem !important;
+        border: 1px solid #842029 !important;
+        border-radius: 8px !important;
+        padding: 0.65rem 2rem !important;
         transition: all 0.2s ease !important;
         width: 100%;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+        margin-top: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
     }
 
-    .stButton>button:hover {
-        background: var(--wine) !important;
-        border-color: var(--wine-bright) !important;
+    .stButton>button[kind="primary"]:hover {
+        background: linear-gradient(180deg, #842029 0%, #5c161d 100%) !important;
+        border-color: #a71d2a !important;
+        color: #ffffff !important;
         transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5) !important;
     }
 
-    input, textarea, [data-baseweb="select"], [data-baseweb="base-input"] {
-        background-color: var(--surface) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 10px !important;
-        color: var(--text) !important;
-    }
-
-    input:focus, textarea:focus {
-        border-color: var(--violet-bright) !important;
-        box-shadow: 0 0 0 1px var(--violet-bright) !important;
-    }
-
-    [data-baseweb="slider"] [role="slider"] {
-        background-color: var(--wine-bright) !important;
-    }
-
-    div[data-testid="stFileUploader"], div[data-testid="stCameraInput"] {
-        background: var(--surface);
-        border: 1px dashed var(--border-hover);
-        border-radius: 10px;
-        padding: 0.5rem;
-    }
-
-    div[data-testid="stExpander"] {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-    }
-
-    hr, div[data-testid="stDivider"] {
-        border-color: var(--border) !important;
-    }
-
+    /* Secondary / Download Buttons - Dark Violet Accent */
     div[data-testid="stDownloadButton"] > button {
-        background-color: var(--wine) !important;
-        color: var(--text) !important;
-        border: 1px solid var(--wine-bright) !important;
-        border-radius: 10px !important;
+        background: linear-gradient(180deg, #3b154c 0%, #240d30 100%) !important;
+        color: #ebd3f8 !important;
+        border: 1px solid #582373 !important;
+        border-radius: 8px !important;
+        width: 100%;
     }
 
     div[data-testid="stDownloadButton"] > button:hover {
-        background-color: var(--wine-bright) !important;
-        box-shadow: 0 6px 18px rgba(155, 44, 71, 0.35) !important;
+        background: linear-gradient(180deg, #4c1d63 0%, #321243 100%) !important;
+        border-color: #732e96 !important;
+        color: #ffffff !important;
     }
 
-    div[data-testid="stAlert"] {
-        background: var(--surface) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 10px;
+    /* Expander Container */
+    .streamlit-expanderHeader {
+        background-color: #141419 !important;
+        border: 1px solid #242430 !important;
+        border-radius: 8px !important;
+        color: #c5c5d0 !important;
     }
 
-    div[role="progressbar"] > div {
-        background-color: var(--violet-bright) !important;
+    /* Sidebar Fixes */
+    section[data-testid="stSidebar"] {
+        background-color: #09090b !important;
+        border-right: 1px solid #1f1f28 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 class="clean-header">✦ Snap Notes to Anki</h1>', unsafe_allow_html=True)
-st.markdown('<div class="header-rule"></div>', unsafe_allow_html=True)
-st.markdown('<p class="clean-sub">Transform notes into structured flashcard decks seamlessly.</p>', unsafe_allow_html=True)
+st.markdown('<h1 class="claude-header">Snap Notes to Anki</h1>', unsafe_allow_html=True)
+st.markdown('<p class="claude-sub">Transform your study material into minimal, structured flashcard decks.</p>', unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
 # 2. Inputs & Secrets
@@ -213,10 +187,11 @@ with input_tab2:
         uploaded_file = camera_photo
         input_source = "camera"
 
+# Updated candidate models with active versions
 CANDIDATE_MODELS = [
+    "gemini-3.6-flash",
+    "gemini-3.0-flash",
     "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
-    "gemini-2.0-flash",
 ]
 
 class Flashcard(BaseModel):
@@ -308,8 +283,8 @@ def build_deck(deck_name: str, cards: list[dict]) -> bytes:
         fields=[{"name": "Question"}, {"name": "Answer"}],
         templates=[{
             "name": "Card 1",
-            "qfmt": '<div style="font-family: system-ui, sans-serif; font-size: 1.2rem; text-align: center; padding: 20px;">{{Question}}</div>',
-            "afmt": '{{FrontSide}}<hr id="answer"><div style="font-family: system-ui, sans-serif; font-size: 1.1rem; color: #166534; text-align: center; padding: 20px;">{{Answer}}</div>',
+            "qfmt": '<div style="font-family: system-ui, sans-serif; font-size: 1.1rem; text-align: center; color: #f0ede6; padding: 20px;">{{Question}}</div>',
+            "afmt": '{{FrontSide}}<hr id="answer" style="border-color: #2e2e3d;"><div style="font-family: system-ui, sans-serif; font-size: 1.05rem; color: #a3e635; text-align: center; padding: 20px;">{{Answer}}</div>',
         }],
     )
 
@@ -322,7 +297,7 @@ def build_deck(deck_name: str, cards: list[dict]) -> bytes:
         deck.add_note(genanki.Note(model=anki_model, fields=[front, back]))
 
     buffer = io.BytesIO()
-    genanki.Package(deck).write_to_file(buffer)  # accepts a file-like object, not just a path
+    genanki.Package(deck).write_to_buffer(buffer)
     buffer.seek(0)
     return buffer.getvalue()
 
@@ -412,3 +387,5 @@ if st.button("Generate Flashcard Deck", type="primary"):
 
             except Exception as e:
                 st.error(f"Error: {e}")
+
+```
