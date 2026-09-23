@@ -22,73 +22,169 @@ st.set_page_config(page_title="Snap to Anki", page_icon="✦", layout="centered"
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+    :root {
+        --bg: #0a0a0d;
+        --surface: #14121a;
+        --surface-hover: #1c1824;
+        --border: rgba(155, 110, 180, 0.18);
+        --border-hover: rgba(155, 110, 180, 0.35);
+        --violet: #4c2a72;
+        --violet-bright: #7c4dbd;
+        --wine: #5e1a30;
+        --wine-bright: #9b2c47;
+        --text: #ece7ee;
+        --text-muted: #8f8698;
+    }
+
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
+        font-family: 'IBM Plex Sans', sans-serif;
     }
 
     .stApp {
-        background: linear-gradient(135deg, #f5f6f8 0%, #e9ecef 100%);
-        color: #2b2d42;
+        background: var(--bg);
+        color: var(--text);
+    }
+
+    section[data-testid="stSidebar"] {
+        background: var(--surface);
+        border-right: 1px solid var(--border);
     }
 
     .clean-header {
-        font-size: 2.2rem;
+        font-family: 'Fraunces', serif;
+        font-size: 2.6rem;
         font-weight: 500;
         text-align: center;
-        color: #1a1a2e;
+        color: var(--text);
         letter-spacing: -0.5px;
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .header-rule {
+        width: 72px;
+        height: 3px;
+        margin: 0 auto 1.4rem auto;
+        border-radius: 2px;
+        background: linear-gradient(90deg, var(--violet-bright), var(--wine-bright));
     }
 
     .clean-sub {
         font-size: 0.95rem;
         text-align: center;
-        color: #6c757d;
+        color: var(--text-muted);
         font-weight: 400;
-        margin-bottom: 2rem;
+        margin-bottom: 2.2rem;
+    }
+
+    h1, h2, h3 { font-family: 'Fraunces', serif; color: var(--text); }
+
+    label, .stMarkdown, p, span, div {
+        color: var(--text);
     }
 
     div[data-testid="stVerticalBlock"] > div, .stTabs [data-baseweb="tab-list"] {
-        border-radius: 12px;
+        border-radius: 10px;
+    }
+
+    .stTabs [data-baseweb="tab-list"] {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        gap: 4px;
+        padding: 4px;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        color: var(--text-muted);
+        font-weight: 500;
+        border-radius: 8px;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background: var(--violet) !important;
+        color: var(--text) !important;
     }
 
     .stButton>button {
-        background: #2b2d42 !important;
-        color: #ffffff !important;
+        background: var(--violet) !important;
+        color: var(--text) !important;
         font-weight: 500 !important;
-        border: none !important;
+        font-family: 'IBM Plex Sans', sans-serif !important;
+        border: 1px solid var(--border-hover) !important;
         border-radius: 10px !important;
         padding: 0.6rem 2rem !important;
         transition: all 0.2s ease !important;
         width: 100%;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
     }
 
     .stButton>button:hover {
-        background: #4a4e69 !important;
+        background: var(--wine) !important;
+        border-color: var(--wine-bright) !important;
         transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5) !important;
     }
 
-    input, textarea, [data-baseweb="select"] {
-        background-color: #ffffff !important;
-        border: 1px solid #dcdfe6 !important;
+    input, textarea, [data-baseweb="select"], [data-baseweb="base-input"] {
+        background-color: var(--surface) !important;
+        border: 1px solid var(--border) !important;
         border-radius: 10px !important;
-        color: #2b2d42 !important;
+        color: var(--text) !important;
+    }
+
+    input:focus, textarea:focus {
+        border-color: var(--violet-bright) !important;
+        box-shadow: 0 0 0 1px var(--violet-bright) !important;
+    }
+
+    [data-baseweb="slider"] [role="slider"] {
+        background-color: var(--wine-bright) !important;
+    }
+
+    div[data-testid="stFileUploader"], div[data-testid="stCameraInput"] {
+        background: var(--surface);
+        border: 1px dashed var(--border-hover);
+        border-radius: 10px;
+        padding: 0.5rem;
+    }
+
+    div[data-testid="stExpander"] {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+    }
+
+    hr, div[data-testid="stDivider"] {
+        border-color: var(--border) !important;
     }
 
     div[data-testid="stDownloadButton"] > button {
-        background-color: #4a4e69 !important;
-        color: #ffffff !important;
+        background-color: var(--wine) !important;
+        color: var(--text) !important;
+        border: 1px solid var(--wine-bright) !important;
         border-radius: 10px !important;
-        border: none !important;
+    }
+
+    div[data-testid="stDownloadButton"] > button:hover {
+        background-color: var(--wine-bright) !important;
+        box-shadow: 0 6px 18px rgba(155, 44, 71, 0.35) !important;
+    }
+
+    div[data-testid="stAlert"] {
+        background: var(--surface) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 10px;
+    }
+
+    div[role="progressbar"] > div {
+        background-color: var(--violet-bright) !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown('<h1 class="clean-header">✦ Snap Notes to Anki</h1>', unsafe_allow_html=True)
+st.markdown('<div class="header-rule"></div>', unsafe_allow_html=True)
 st.markdown('<p class="clean-sub">Transform notes into structured flashcard decks seamlessly.</p>', unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
