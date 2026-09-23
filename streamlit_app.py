@@ -185,9 +185,9 @@ with input_tab2:
         input_source = "camera"
 
 CANDIDATE_MODELS = [
+    "gemini-3.6-flash",
+    "gemini-3.0-flash",
     "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
-    "gemini-2.0-flash",
 ]
 
 class Flashcard(BaseModel):
