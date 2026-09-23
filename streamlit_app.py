@@ -1,6 +1,3 @@
-Here is the full, updated `app.py` script with the active `gemini-3.6-flash` model lineup and all UI/logic improvements applied:
-
-```python
 import io
 import os
 import time
@@ -187,11 +184,10 @@ with input_tab2:
         uploaded_file = camera_photo
         input_source = "camera"
 
-# Updated candidate models with active versions
 CANDIDATE_MODELS = [
-    "gemini-3.6-flash",
-    "gemini-3.0-flash",
     "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
 ]
 
 class Flashcard(BaseModel):
@@ -387,5 +383,3 @@ if st.button("Generate Flashcard Deck", type="primary"):
 
             except Exception as e:
                 st.error(f"Error: {e}")
-
-```
